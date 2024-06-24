@@ -1,10 +1,13 @@
 name: Docker build image on release
 
 on:
-    dispatch_workflow:
     push:
         branches:
         - 'main'
+    workflow_dispatch:
+concurrency:
+  group: "${{github.repository}}-${{ github.ref_name }}-${{ github.job.container.id }}"
+  cancel-in-progress: true
 
 jobs:
   docker:
@@ -40,3 +43,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ghcr.io/${{ steps.repo.outputs.lowercase }}:latest
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
